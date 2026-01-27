@@ -1,4 +1,5 @@
 import 'package:credito_solitario_mobile/pages/home_page_view.dart';
+import 'package:credito_solitario_mobile/pages/login.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomePageView(),
+      home: const LoginPageView(),
     );
   }
 }
