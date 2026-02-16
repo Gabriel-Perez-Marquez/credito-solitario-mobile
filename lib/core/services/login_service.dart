@@ -18,6 +18,7 @@ class LoginService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final token = _extractToken(data);
+        final user = _extractUser(data);
 
         if (token == null || token.isEmpty) {
           return {
@@ -28,6 +29,9 @@ class LoginService {
         }
 
         await _authStorageService.saveToken(token);
+        if (user != null) {
+          await _authStorageService.saveUser(user);
+        }
         return {'success': true, 'data': data};
       } else if (response.statusCode == 401) {
         return {'success': false, 'error': 'Usuario o contraseña incorrectos'};
@@ -67,5 +71,37 @@ class LoginService {
     }
 
     return null;
+  }
+
+  Map<String, dynamic>? _extractUser(dynamic data) {
+    if (data is! Map<String, dynamic>) {
+      return null;
+    }
+
+    if (_looksLikeUserMap(data)) {
+      return data;
+    }
+
+    final nestedCandidates = [
+      data['data'],
+      data['user'],
+      data['usuario'],
+      data['profile'],
+    ];
+
+    for (final candidate in nestedCandidates) {
+      if (candidate is Map<String, dynamic> && _looksLikeUserMap(candidate)) {
+        return candidate;
+      }
+    }
+
+    return null;
+  }
+
+  bool _looksLikeUserMap(Map<String, dynamic> map) {
+    return map.containsKey('name') ||
+        map.containsKey('nombre') ||
+        map.containsKey('email') ||
+        map.containsKey('correo');
   }
 }
