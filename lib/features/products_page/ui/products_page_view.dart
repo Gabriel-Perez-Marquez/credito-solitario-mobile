@@ -1,4 +1,5 @@
 import 'package:credito_solitario_mobile/core/services/products_service.dart';
+import 'package:credito_solitario_mobile/features/profile_page/ui/profile_page_view.dart';
 import 'package:credito_solitario_mobile/features/products_page/bloc/products_page_view_bloc.dart';
 import 'package:credito_solitario_mobile/features/products_page/ui/product_card.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,15 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   }
 
   void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
+    if (index == 3) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ProfilePageView()),
+      );
+      return;
+    }
+
     setState(() {
       _selectedIndex = index;
     });
@@ -68,10 +78,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     SizedBox(height: 8),
                     Text(
                       'Descubre productos con impacto social',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                     SizedBox(height: 20),
                     // Barra de búsqueda
@@ -85,7 +92,10 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                         decoration: InputDecoration(
                           hintText: 'Buscar productos...',
                           hintStyle: TextStyle(color: Colors.grey[400]),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Colors.grey[400],
+                          ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 20,
@@ -106,9 +116,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
               builder: (context, state) {
                 if (state is ProductsPageViewLoading) {
                   return Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF00BFA5),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                   );
                 } else if (state is ProductsPageViewSuccess) {
                   return GridView.builder(
@@ -163,9 +171,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                   );
                 }
                 return Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF00BFA5),
-                  ),
+                  child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                 );
               },
             ),
