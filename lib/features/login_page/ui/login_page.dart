@@ -1,6 +1,6 @@
 import 'package:credito_solitario_mobile/features/login_page/bloc/login_page_bloc.dart';
 import 'package:credito_solitario_mobile/core/services/login_service.dart';
-import 'package:credito_solitario_mobile/pages/home_page_view.dart';
+import 'package:credito_solitario_mobile/features/products_page/ui/products_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -44,7 +44,7 @@ class _LoginPageViewState extends State<LoginPageView> {
             // Navegar a la página principal
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const HomePageView()),
+              MaterialPageRoute(builder: (context) => const ProductsPageView()),
             );
           } else if (state is LoginPageError) {
             // Mostrar error
