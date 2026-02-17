@@ -1,7 +1,10 @@
 import 'package:credito_solitario_mobile/core/services/products_service.dart';
+import 'package:credito_solitario_mobile/core/services/shopping_cart_service.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_page_view.dart';
 import 'package:credito_solitario_mobile/features/products_page/bloc/products_page_view_bloc.dart';
 import 'package:credito_solitario_mobile/features/products_page/ui/product_card.dart';
+import 'package:credito_solitario_mobile/features/shopping_cart/bloc/shopping_cart_bloc.dart';
+import 'package:credito_solitario_mobile/features/shopping_cart/ui/shopping_cart_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,6 +35,20 @@ class _ProductsPageViewState extends State<ProductsPageView> {
 
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
+    
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => ShoppingCartBloc(ShoppingCartService()),
+            child: const ShoppingCartView(),
+          ),
+        ),
+      );
+      return;
+    }
+    
     if (index == 3) {
       Navigator.pushReplacement(
         context,
