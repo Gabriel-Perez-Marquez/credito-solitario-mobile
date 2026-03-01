@@ -1,10 +1,14 @@
 import 'package:credito_solitario_mobile/core/services/auth_storage_service.dart';
 import 'package:credito_solitario_mobile/core/services/profile_service.dart';
+import 'package:credito_solitario_mobile/core/services/shopping_cart_service.dart';
 import 'package:credito_solitario_mobile/features/login_page/ui/login_page.dart';
 import 'package:credito_solitario_mobile/features/products_page/ui/products_page_view.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_header.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_option_card.dart';
+import 'package:credito_solitario_mobile/features/shopping_cart/bloc/shopping_cart_bloc.dart';
+import 'package:credito_solitario_mobile/features/shopping_cart/ui/shopping_cart_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfilePageView extends StatefulWidget {
   const ProfilePageView({super.key});
@@ -46,10 +50,25 @@ class _ProfilePageViewState extends State<ProfilePageView> {
       return;
     }
 
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => ShoppingCartBloc(ShoppingCartService()),
+            child: const ShoppingCartView(),
+          ),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _selectedIndex = index;
     });
   }
+  
+  
 
   @override
   Widget build(BuildContext context) {
