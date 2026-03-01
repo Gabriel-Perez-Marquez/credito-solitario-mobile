@@ -62,16 +62,43 @@ class _ProductsPageViewState extends State<ProductsPageView> {
     });
   }
 
+  Widget _buildCategoryChip(String label, bool isSelected,) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: TextButton(
+        onPressed: () {
+        },
+        style: TextButton.styleFrom(
+          backgroundColor: isSelected ? Colors.white : Colors.white.withOpacity(0.15),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFF004B93) : Colors.white,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF5F5F7), // Gris claro del fondo
       body: Column(
         children: [
-          // Header con título y barra de búsqueda
+          // Header principal
           Container(
-            decoration: BoxDecoration(
-              color: Color(0xFF0D3B66),
+            decoration: const BoxDecoration(
+              color: Color(0xFF004B93), // Azul oscuro fiel a la imagen
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
@@ -80,45 +107,102 @@ class _ProductsPageViewState extends State<ProductsPageView> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Crédito Solidario',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Descubre productos con impacto social',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    SizedBox(height: 20),
-                    // Barra de búsqueda
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Buscar productos...',
-                          hintStyle: TextStyle(color: Colors.grey[400]),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.grey[400],
+                    // Fila superior: Título y Notificaciones
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Crédito Solidario',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tu plataforma de ayuda social',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8), 
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            shape: BoxShape.circle,
                           ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
+                          child: IconButton(
+                            icon: const Icon(Icons.notifications_none, color: Colors.white),
+                            onPressed: () {},
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Fila del Buscador y Botón de Filtro
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Buscar productos...',
+                                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.grey[400],
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.tune, color: Colors.white),
+                            onPressed: () {},
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Categorías (Carrusel horizontal)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildCategoryChip('Todo', true),
+                          _buildCategoryChip('Alimentación', false),
+                          _buildCategoryChip('Higiene', false),
+                          _buildCategoryChip('Ropa', false),
+                        ],
                       ),
                     ),
                   ],
@@ -126,23 +210,62 @@ class _ProductsPageViewState extends State<ProductsPageView> {
               ),
             ),
           ),
-          // Contenido principal
+          
+          // Subtítulo Catálogo y Ordenar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Catálogo',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () {},
+                  icon: const Text(
+                    'Ordenar',
+                    style: TextStyle(
+                      color: Color(0xFF004B93),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  label: const Icon(
+                    Icons.sort, 
+                    color: Color(0xFF004B93), 
+                    size: 18,
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Contenido principal (Grid)
           Expanded(
             child: BlocBuilder<ProductsPageViewBloc, ProductsPageViewState>(
               bloc: productsPageViewBloc,
               builder: (context, state) {
                 if (state is ProductsPageViewLoading) {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                   );
                 } else if (state is ProductsPageViewSuccess) {
                   return GridView.builder(
-                    padding: EdgeInsets.all(16),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 0.75,
+                      childAspectRatio: 0.58, 
                     ),
                     itemCount: state.productsList.length,
                     itemBuilder: (context, index) {
@@ -150,6 +273,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                         imageUrl: state.productsList[index].urlImagen,
                         productName: state.productsList[index].nombre,
                         price: state.productsList[index].precio,
+                        category: state.productsList[index].categoria.toString(), 
                       );
                     },
                   );
@@ -158,36 +282,26 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 60,
-                          color: Colors.red[300],
-                        ),
-                        SizedBox(height: 16),
-                        Text(
+                        Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
+                        const SizedBox(height: 16),
+                        const Text(
                           'Error al cargar productos',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 40),
                           child: Text(
                             state.message,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
                           ),
                         ),
                       ],
                     ),
                   );
                 }
-                return Center(
+                return const Center(
                   child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                 );
               },
@@ -195,9 +309,10 @@ class _ProductsPageViewState extends State<ProductsPageView> {
           ),
         ],
       ),
+      
       // Bottom Navigation Bar
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           boxShadow: [
             BoxShadow(
               color: Colors.black12,
@@ -211,20 +326,20 @@ class _ProductsPageViewState extends State<ProductsPageView> {
           onTap: _onItemTapped,
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
-          selectedItemColor: Color(0xFF00BFA5),
+          selectedItemColor: const Color(0xFF00BFA5),
           unselectedItemColor: Colors.grey[400],
           selectedFontSize: 12,
           unselectedFontSize: 12,
-          items: [
+          items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Inicio',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_outlined),
-              activeIcon: Icon(Icons.shopping_cart),
-              label: 'Carrito',
+              icon: Icon(Icons.shopping_bag_outlined), // Cambiado a bag
+              activeIcon: Icon(Icons.shopping_bag),
+              label: 'Cesta', // Texto ajustado al de la imagen
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
