@@ -4,12 +4,14 @@ class ProductCard extends StatelessWidget {
   final String imageUrl;
   final String productName;
   final double price;
+  final String category;
 
   const ProductCard({
     super.key,
     required this.imageUrl,
     required this.productName,
     required this.price,
+    required this.category
   });
 
   @override
