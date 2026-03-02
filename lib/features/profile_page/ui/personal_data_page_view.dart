@@ -1,3 +1,4 @@
+import 'package:credito_solitario_mobile/core/services/profile_service.dart';
 import 'package:flutter/material.dart';
 
 class PersonalDataPageView extends StatefulWidget {
@@ -11,6 +12,8 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
   // Estado para controlar si estamos en modo edición o no
   bool _isEditing = false;
   bool _isLoading = false;
+  final ProfileService _profileService = ProfileService();
+
 
   // Controladores para los campos
   late TextEditingController _nameCtrl;
@@ -43,15 +46,13 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Aquí conectarás con tu ProfileService para enviar los datos a Laravel
-      /*
       await _profileService.updateProfile(
         name: _nameCtrl.text,
         email: _emailCtrl.text,
         phone: _phoneCtrl.text,
         address: _addressCtrl.text,
       );
-      */
+      
       
       // Simulamos un retraso de red
       await Future.delayed(const Duration(seconds: 2));
@@ -59,7 +60,7 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
       if (!mounted) return;
       
       setState(() {
-        _isEditing = false; // Volvemos al modo lectura
+        _isEditing = false; 
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,13 +95,11 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         actions: [
-          // Botón en la barra superior para cancelar la edición
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.close, color: Colors.red),
               onPressed: () {
                 setState(() => _isEditing = false);
-                // Opcional: Revertir los campos a su valor original aquí
               },
             ),
         ],

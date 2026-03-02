@@ -17,6 +17,8 @@ class ProfileService {
        _profilePaths =
            profilePaths ?? const ['/perfil', '/profile', '/me', '/user'];
 
+
+
   Future<Map<String, dynamic>> getMyProfile() async {
     final token = await _authStorageService.getToken();
     if (token == null || token.isEmpty) {
@@ -56,6 +58,8 @@ class ProfileService {
       'No se encontró endpoint de perfil válido. Revisa profilePaths en ProfileService.',
     );
   }
+
+
 
   Map<String, dynamic> _parseProfileResponse(String body) {
     final decoded = jsonDecode(body);
@@ -124,6 +128,62 @@ class ProfileService {
       }
 
       return;
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+
+  Future<void> updateProfile({
+    required String name,
+    required String email,
+    required String phone,
+    required String address,
+  }) async {
+    try {
+      final token = await _authStorageService.getToken();
+
+      final response = await http.put(
+        Uri.parse('$_apiBaseUrl/profile'), 
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'telefono': phone,
+          'direccion': address,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Error al actualizar el perfil');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<List<dynamic>> getMyHistory() async {
+    try {
+      final token = await _authStorageService.getToken();
+
+      final response = await http.get(
+        Uri.parse('$_apiBaseUrl/my-orders'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Error ${response.statusCode}: ${response.body}');
+      }
     } catch (e) {
       throw Exception(e.toString());
     }
