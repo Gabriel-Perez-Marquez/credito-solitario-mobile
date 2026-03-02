@@ -1,10 +1,13 @@
 import 'package:credito_solitario_mobile/core/services/auth_storage_service.dart';
 import 'package:credito_solitario_mobile/core/services/profile_service.dart';
-import 'package:credito_solitario_mobile/core/services/shopping_cart_service.dart';
 import 'package:credito_solitario_mobile/features/login_page/ui/login_page.dart';
 import 'package:credito_solitario_mobile/features/products_page/ui/products_page_view.dart';
+import 'package:credito_solitario_mobile/features/profile_page/ui/help_center_page_view.dart';
+import 'package:credito_solitario_mobile/features/profile_page/ui/history_page_view.dart';
+import 'package:credito_solitario_mobile/features/profile_page/ui/personal_data_page_view.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_header.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_option_card.dart';
+import 'package:credito_solitario_mobile/features/profile_page/ui/security_page_view.dart';
 import 'package:credito_solitario_mobile/features/shopping_cart/bloc/shopping_cart_bloc.dart';
 import 'package:credito_solitario_mobile/features/shopping_cart/ui/shopping_cart_view.dart';
 import 'package:flutter/material.dart';
@@ -53,12 +56,7 @@ class _ProfilePageViewState extends State<ProfilePageView> {
     if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (_) => ShoppingCartBloc(ShoppingCartService()),
-            child: const ShoppingCartView(),
-          ),
-        ),
+        MaterialPageRoute(builder: (_) => const ShoppingCartView()),
       );
       return;
     }
@@ -67,100 +65,152 @@ class _ProfilePageViewState extends State<ProfilePageView> {
       _selectedIndex = index;
     });
   }
-  
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.white,
       body: FutureBuilder<Map<String, dynamic>>(
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF00BFA5),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
             );
           }
 
-          
-
           final user = snapshot.data ?? {};
           final userName = _resolveUserName(user);
-          final userEmail = _resolveUserEmail(user);
           final loyaltyPoints = _resolveLoyaltyPoints(user);
 
           return SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ProfileHeader(
-                  userName: userName,
-                  userEmail: userEmail,
-                  loyaltyPoints: loyaltyPoints,
+                ProfileHeader(userName: userName, loyaltyPoints: loyaltyPoints),
+
+                // SECCIÓN CUENTA
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, top: 20, bottom: 10),
+                  child: Text(
+                    'CUENTA',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 22),
+                // SECCIÓN CUENTA
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
-                    children: const [
+                    children: [
                       ProfileOptionCard(
-                        icon: Icons.shield_outlined,
+                        icon: Icons.lock_outline,
                         title: 'Seguridad',
-                        subtitle: 'Contraseña y autenticación',
+                        subtitle: 'Contraseña, 2FA',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SecurityPageView(),
+                            ),
+                          );
+                        },
                       ),
-                      SizedBox(height: 14),
                       ProfileOptionCard(
-                        icon: Icons.credit_card_outlined,
-                        title: 'Historial de pagos',
-                        subtitle: 'Ver transacciones anteriores',
+                        icon: Icons.history,
+                        title: 'Historial',
+                        subtitle: 'Transacciones recientes',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HistoryPageView(),
+                            ),
+                          );
+                        },
                       ),
-                      SizedBox(height: 14),
                       ProfileOptionCard(
-                        icon: Icons.storage_outlined,
-                        title: 'Datos personales',
-                        subtitle: 'Gestionar información de cuenta',
+                        icon: Icons.badge_outlined,
+                        title: 'Datos Personales',
+                        subtitle: 'Gestión de perfil',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const PersonalDataPageView(),
+                            ),
+                          );
+                        },
                       ),
-                      SizedBox(height: 24),
                     ],
                   ),
                 ),
+
+                // SECCIÓN SOPORTE
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, top: 24, bottom: 10),
+                  child: Text(
+                    'SOPORTE',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ProfileOptionCard(
+                    icon: Icons.help_outline,
+                    title: 'Centro de Ayuda',
+                    subtitle: 'Preguntas frecuentes',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpCenterPageView(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Botón Cerrar Sesión (Estilo fantasma/Outlined rojo)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
+                    child: OutlinedButton(
                       onPressed: _logout,
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide.none,
+                        side: BorderSide(color: Colors.red[100]!, width: 1.5),
                         backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      icon: const Icon(
-                        Icons.logout,
-                        color: Color(0xFFFF3B30),
-                      ),
-                      label: const Text(
+                      child: const Text(
                         'Cerrar sesión',
                         style: TextStyle(
                           color: Color(0xFFFF3B30),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 34),
-                const Text(
-                  'Crédito Solidario v1.0.0',
-                  style: TextStyle(color: Color(0xFF8C9BB5), fontSize: 16),
-                ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 40),
               ],
             ),
           );
@@ -185,23 +235,59 @@ class _ProfilePageViewState extends State<ProfilePageView> {
           unselectedItemColor: Colors.grey[400],
           selectedFontSize: 12,
           unselectedFontSize: 12,
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Inicio',
             ),
+
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_outlined),
-              activeIcon: Icon(Icons.shopping_cart),
-              label: 'Carrito',
+              icon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = 0;
+
+                  if (state is ShoppingCartSuccess) {
+                    cantidadEnCarrito = state.items.length;
+                  }
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child: const Icon(Icons.shopping_bag_outlined),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag_outlined);
+                },
+              ),
+              activeIcon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = 0;
+
+                  if (state is ShoppingCartSuccess) {
+                    cantidadEnCarrito = state.items.length;
+                  }
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child: const Icon(Icons.shopping_bag),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag);
+                },
+              ),
+              label: 'Cesta',
             ),
-            BottomNavigationBarItem(
+
+            const BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long),
               label: 'Pedidos',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Perfil',
@@ -215,17 +301,9 @@ class _ProfilePageViewState extends State<ProfilePageView> {
   String _resolveUserName(Map<String, dynamic> user) {
     final rawName = user['name'] ?? user['nombre'];
     if (rawName == null || rawName.toString().trim().isEmpty) {
-      return 'Usuario';
+      return 'Gabriel Pérez';
     }
     return rawName.toString();
-  }
-
-  String _resolveUserEmail(Map<String, dynamic> user) {
-    final rawEmail = user['email'] ?? user['correo'];
-    if (rawEmail == null || rawEmail.toString().trim().isEmpty) {
-      return 'sin-correo@correo.com';
-    }
-    return rawEmail.toString();
   }
 
   int _resolveLoyaltyPoints(Map<String, dynamic> user) {

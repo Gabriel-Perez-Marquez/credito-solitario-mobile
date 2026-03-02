@@ -96,4 +96,36 @@ class ProfileService {
     final hasEmail = map.containsKey('email') || map.containsKey('correo');
     return hasName || hasEmail;
   }
+
+
+
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final token = await _authStorageService.getToken();
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8000/api/change-password'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('La contraseña actual no es correcta');
+      }
+
+      return;
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
 }

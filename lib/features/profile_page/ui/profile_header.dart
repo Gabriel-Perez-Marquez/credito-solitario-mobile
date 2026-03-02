@@ -2,107 +2,166 @@ import 'package:flutter/material.dart';
 
 class ProfileHeader extends StatelessWidget {
   final String userName;
-  final String userEmail;
   final int loyaltyPoints;
 
   const ProfileHeader({
     super.key,
     required this.userName,
-    required this.userEmail,
     required this.loyaltyPoints,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(38),
-          bottomRight: Radius.circular(38),
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF002B62), Color(0xFF003E7A)],
-        ),
-      ),
+      color: Colors.white,
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 28, 20, 38),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF17BA8B),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF43D4A8), width: 4),
-                ),
-                child: const Icon(
-                  Icons.person_outline,
-                  size: 56,
-                  color: Colors.white,
-                ),
+              // Barra superior: Título y botón de ajustes
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Mi Perfil',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.settings_outlined, color: Colors.black87),
+                      onPressed: () {},
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 30),
+              
+              // Avatar con indicador verde
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF00E5FF), width: 3), // Borde cyan
+                      image: const DecorationImage(
+                        image: NetworkImage('https://i.pravatar.cc/300'), // Reemplazar con URL de tu avatar
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  // Puntito verde de "Online"
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00E676),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Nombre y Subtítulo
               Text(
                 userName,
-                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 42 / 2,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
-                userEmail,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFFC3D4EC),
-                  fontSize: 28 / 2,
+                'Miembro Solidario',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 30),
+
+              // Tarjeta de Saldo Solidario
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A548B),
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(color: const Color(0xFF5F7FA5)),
+                  color: const Color(0xFFF3F6FF), // Fondo azul muy claro
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      Icons.military_tech_outlined,
-                      color: Color(0xFF00D9A0),
-                      size: 23,
-                    ),
-                    const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Puntos de fidelidad',
-                          style: TextStyle(
-                            color: Color(0xFFB5C6DD),
-                            fontSize: 14,
-                          ),
+                        Row(
+                          children: [
+                            const Text(
+                              'SALDO SOLIDARIO',
+                              style: TextStyle(
+                                color: Color(0xFF3B5998),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.info_outline, size: 14, color: Colors.blue[300]),
+                          ],
                         ),
-                        Text(
-                          '$loyaltyPoints pts',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              '$loyaltyPoints',
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              'pts',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
+                    ),
+                    // Círculo amarillo con estrella
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.star_border_rounded,
+                        color: Colors.amber,
+                        size: 30,
+                      ),
                     ),
                   ],
                 ),
@@ -114,4 +173,3 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 }
-
