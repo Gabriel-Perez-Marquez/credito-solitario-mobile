@@ -13,7 +13,12 @@ final class ProductsPageViewLoading extends ProductsPageViewState {}
 
 final class ProductsPageViewSuccess extends ProductsPageViewState {
   final List<Product> productsList;
-  const ProductsPageViewSuccess({required this.productsList});
+  final List<Categoria> categoriesList; 
+
+  const ProductsPageViewSuccess({
+    required this.productsList,
+    required this.categoriesList,
+  });
 }
 
 final class ProductsPageViewError extends ProductsPageViewState {

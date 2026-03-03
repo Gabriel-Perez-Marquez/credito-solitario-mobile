@@ -11,9 +11,15 @@ class ProductsPageViewBloc extends Bloc<ProductsPageViewEvent, ProductsPageViewS
     on<ProductsPageViewEvent>((event, emit) async {
       emit(ProductsPageViewLoading());
       try{
-        var apiProductsList = await productsService.getAll();
+        final results = await Future.wait([
+          productsService.getAll(),
+          productsService.getCategorias(),
+        ]);
 
-        emit(ProductsPageViewSuccess(productsList: apiProductsList));
+        emit(ProductsPageViewSuccess(
+          productsList: results[0] as List<Product>,
+          categoriesList: results[1] as List<Categoria>,
+        ));
       } catch (e){
         emit(ProductsPageViewError(message: e.toString()));
       }

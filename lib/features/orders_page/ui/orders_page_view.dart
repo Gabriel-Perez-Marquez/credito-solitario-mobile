@@ -1,6 +1,7 @@
 import 'package:credito_solitario_mobile/core/models/order_response.dart';
 import 'package:credito_solitario_mobile/features/order_detail_page/ui/order_detail_page_view.dart';
 import 'package:credito_solitario_mobile/features/orders_page/bloc/orders_page_bloc.dart';
+import 'package:credito_solitario_mobile/features/shopping_cart/bloc/shopping_cart_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -297,11 +298,41 @@ class _OrdersPageViewState extends State<OrdersPageView> {
         unselectedItemColor: Colors.grey[400],
         selectedFontSize: 12,
         unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), activeIcon: Icon(Icons.shopping_bag), label: 'Carrito'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long), label: 'Pedidos'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Perfil'),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(
+              icon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = state.items.length;
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child:  const Icon(Icons.shopping_bag_outlined),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag_outlined);
+                },
+              ),
+              activeIcon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = state.items.length;
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child: const Icon(Icons.shopping_bag),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag);
+                },
+              ),
+              label: 'Cesta',
+            ),
+          const BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long), label: 'Pedidos'),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
     );

@@ -260,11 +260,7 @@ class _ProfilePageViewState extends State<ProfilePageView> {
             BottomNavigationBarItem(
               icon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
                 builder: (context, state) {
-                  int cantidadEnCarrito = 0;
-
-                  if (state is ShoppingCartSuccess) {
-                    cantidadEnCarrito = state.items.length;
-                  }
+                  int cantidadEnCarrito = state.items.length;
 
                   if (cantidadEnCarrito > 0) {
                     return Badge(
@@ -278,11 +274,7 @@ class _ProfilePageViewState extends State<ProfilePageView> {
               ),
               activeIcon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
                 builder: (context, state) {
-                  int cantidadEnCarrito = 0;
-
-                  if (state is ShoppingCartSuccess) {
-                    cantidadEnCarrito = state.items.length;
-                  }
+                  int cantidadEnCarrito = state.items.length;
 
                   if (cantidadEnCarrito > 0) {
                     return Badge(

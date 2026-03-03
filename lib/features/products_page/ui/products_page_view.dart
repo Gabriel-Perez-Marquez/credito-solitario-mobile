@@ -1,6 +1,6 @@
+import 'package:credito_solitario_mobile/core/models/cart_item_response.dart';
 import 'package:credito_solitario_mobile/core/services/orders_service.dart';
 import 'package:credito_solitario_mobile/core/services/products_service.dart';
-import 'package:credito_solitario_mobile/core/services/shopping_cart_service.dart';
 import 'package:credito_solitario_mobile/features/orders_page/bloc/orders_page_bloc.dart';
 import 'package:credito_solitario_mobile/features/orders_page/ui/orders_page_view.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_page_view.dart';
@@ -22,6 +22,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   late ProductsPageViewBloc productsPageViewBloc;
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
+  int _selectedCategoryId = 0;
 
   @override
   void initState() {
@@ -39,15 +40,10 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
     
-    if (index == 1) {
+   if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => BlocProvider(
-            create: (context) => ShoppingCartBloc(ShoppingCartService()),
-            child: const ShoppingCartView(),
-          ),
-        ),
+        MaterialPageRoute(builder: (context) => const ShoppingCartView()),
       );
       return;
     }
@@ -76,12 +72,11 @@ class _ProductsPageViewState extends State<ProductsPageView> {
     });
   }
 
-  Widget _buildCategoryChip(String label, bool isSelected,) {
+  Widget _buildCategoryChip(String label, bool isSelected, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: TextButton(
-        onPressed: () {
-        },
+        onPressed: onTap,
         style: TextButton.styleFrom(
           backgroundColor: isSelected ? Colors.white : Colors.white.withOpacity(0.15),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -208,16 +203,42 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     const SizedBox(height: 24),
 
                     // Categorías (Carrusel horizontal)
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildCategoryChip('Todo', true),
-                          _buildCategoryChip('Alimentación', false),
-                          _buildCategoryChip('Higiene', false),
-                          _buildCategoryChip('Ropa', false),
-                        ],
-                      ),
+                    BlocBuilder<ProductsPageViewBloc, ProductsPageViewState>(
+                      bloc: productsPageViewBloc,
+                      builder: (context, state) {
+                        if (state is ProductsPageViewSuccess) {
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                // Botón estático de "Todo"
+                                _buildCategoryChip('Todo', _selectedCategoryId == 0, () {
+                                  setState(() => _selectedCategoryId = 0);
+                                }),
+                                // Lista dinámica desde la API
+                                ...state.categoriesList.map((categoria) {
+                                  return _buildCategoryChip(
+                                    categoria.nombre,
+                                    _selectedCategoryId == categoria.id,
+                                    () {
+                                      setState(() => _selectedCategoryId = categoria.id);
+                                    },
+                                  );
+                                }),
+                              ],
+                            ),
+                          );
+                        }
+                        
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildCategoryChip('Todo', true, () {}),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -273,6 +294,15 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                   );
                 } else if (state is ProductsPageViewSuccess) {
+                  final filteredProducts = _selectedCategoryId == 0 
+                      ? state.productsList 
+                      : state.productsList.where((p) => p.categoriaId == _selectedCategoryId).toList();
+
+                  if (filteredProducts.isEmpty) {
+                    return const Center(
+                      child: Text('No hay productos en esta categoría', style: TextStyle(fontSize: 16)),
+                    );
+                  }
                   return GridView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -281,13 +311,33 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                       mainAxisSpacing: 16,
                       childAspectRatio: 0.58, 
                     ),
-                    itemCount: state.productsList.length,
+                    itemCount: filteredProducts.length,
                     itemBuilder: (context, index) {
                       return ProductCard(
-                        imageUrl: state.productsList[index].urlImagen,
-                        productName: state.productsList[index].nombre,
-                        price: state.productsList[index].precio,
-                        category: state.productsList[index].categoria.toString(), 
+                        imageUrl: filteredProducts[index].urlImagen,
+                        productName: filteredProducts[index].nombre,
+                        price: filteredProducts[index].precio,
+                        category: filteredProducts[index].categoria.toString(), 
+                        onAddToCart: () {
+                          final cartItem = CartItem(
+                            productId: filteredProducts[index].id,
+                            nombre: filteredProducts[index].nombre,
+                            precio: filteredProducts[index].precio,
+                            cantidad: 1, 
+                            imageUrl: filteredProducts[index].urlImagen,
+                          );
+
+                          context.read<ShoppingCartBloc>().add(AddItemEvent(cartItem));
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${filteredProducts[index].nombre} añadido a la cesta'),
+                              backgroundColor: const Color(0xFF00BFA5),
+                              duration: const Duration(seconds: 1),
+                              behavior: SnackBarBehavior.floating, 
+                            ),
+                          );
+                        },
                       );
                     },
                   );
@@ -344,23 +394,49 @@ class _ProductsPageViewState extends State<ProductsPageView> {
           unselectedItemColor: Colors.grey[400],
           selectedFontSize: 12,
           unselectedFontSize: 12,
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Inicio',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag_outlined), 
-              activeIcon: Icon(Icons.shopping_bag),
-              label: 'Cesta', 
+              icon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = state.items.length;
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child: const Icon(Icons.shopping_bag_outlined),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag_outlined);
+                },
+              ),
+              activeIcon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = state.items.length;
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child: const Icon(Icons.shopping_bag),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag);
+                },
+              ),
+              label: 'Cesta',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long),
               label: 'Pedidos',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Perfil',
