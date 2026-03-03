@@ -1,6 +1,9 @@
 import 'package:credito_solitario_mobile/core/models/cart_item_response.dart';
 import 'package:credito_solitario_mobile/core/services/auth_storage_service.dart';
+import 'package:credito_solitario_mobile/core/services/orders_service.dart';
 import 'package:credito_solitario_mobile/core/services/profile_service.dart';
+import 'package:credito_solitario_mobile/features/orders_page/bloc/orders_page_bloc.dart';
+import 'package:credito_solitario_mobile/features/orders_page/ui/orders_page_view.dart';
 import 'package:credito_solitario_mobile/features/products_page/ui/products_page_view.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_page_view.dart';
 import 'package:credito_solitario_mobile/features/shopping_cart/bloc/shopping_cart_bloc.dart';
@@ -62,6 +65,17 @@ class _ShoppingCartState extends State<ShoppingCartView> {
     if (index == 0) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProductsPageView()));
       return;
+    }
+
+    if(index == 2){
+      Navigator.pushReplacement(
+        context, MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => OrdersPageBloc(OrdersService()),
+            child: const OrdersPageView(),
+          )
+        )
+      );
     }
 
     if (index == 3) {
