@@ -1,4 +1,5 @@
 import 'package:credito_solitario_mobile/core/models/order_response.dart';
+import 'package:credito_solitario_mobile/features/order_detail_page/ui/order_detail_page_view.dart';
 import 'package:credito_solitario_mobile/features/orders_page/bloc/orders_page_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -183,21 +184,25 @@ class _OrdersPageViewState extends State<OrdersPageView> {
                 isCompleted ? 'Entregado el ${_formatDate(order.orderDate)}' : 'Estimado: Hoy, 18:00',
                 style: TextStyle(fontSize: 13, color: Colors.grey[500]),
               ),
-              GestureDetector(
-                onTap: () {
-                  // Navegar a los detalles del pedido
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => OrderDetailPageView(order: order)),
+                  );
                 },
-                child: Row(
-                  children: const [
-                    Text(
-                      'Ver detalle',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF132F53)),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward, size: 16, color: Color(0xFF132F53)),
-                  ],
+                iconAlignment: IconAlignment.end, 
+                icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFF132F53)),
+                label: const Text(
+                  'Ver detalle',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF132F53)),
                 ),
-              ),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              )
             ],
           ),
         ],

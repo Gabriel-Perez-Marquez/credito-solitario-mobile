@@ -96,19 +96,19 @@ class OrderItemModel {
 class ProductSummaryModel {
   final int id;
   final String name;
-  final String? image;
+  final String? urlImagen;
 
   ProductSummaryModel({
     required this.id, 
     required this.name,
-    this.image,
+    this.urlImagen,
   });
 
   factory ProductSummaryModel.fromJson(Map<String, dynamic> json) {
     return ProductSummaryModel(
       id: json['id'] ?? 0,
       name: json['nombre'] ?? 'Product',
-      image: json['imagen'],
+      urlImagen: json['urlImagen'],
     );
   }
 }
