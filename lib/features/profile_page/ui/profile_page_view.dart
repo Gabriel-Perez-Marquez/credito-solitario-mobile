@@ -26,6 +26,7 @@ class _ProfilePageViewState extends State<ProfilePageView> {
   late Future<Map<String, dynamic>> _profileFuture;
   int _selectedIndex = 3;
 
+
   @override
   void initState() {
     super.initState();
@@ -301,17 +302,19 @@ class _ProfilePageViewState extends State<ProfilePageView> {
   String _resolveUserName(Map<String, dynamic> user) {
     final rawName = user['name'] ?? user['nombre'];
     if (rawName == null || rawName.toString().trim().isEmpty) {
-      return 'Gabriel Pérez';
+      return 'Usuario'; 
     }
     return rawName.toString();
   }
 
   int _resolveLoyaltyPoints(Map<String, dynamic> user) {
-    final value =
-        user['loyalty_points'] ?? user['puntos_fidelidad'] ?? user['points'];
-    if (value is int) return value;
-    if (value is String) return int.tryParse(value) ?? 345;
-    if (value is double) return value.toInt();
-    return 345;
+    if (user.containsKey('cliente') && user['cliente'] != null) {
+      final saldo = user['cliente']['saldo'];
+      
+      if (saldo is int) return saldo;
+      if (saldo is String) return int.tryParse(saldo) ?? 0;
+      if (saldo is double) return saldo.toInt();
+    }
+    return 0;
   }
 }

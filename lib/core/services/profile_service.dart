@@ -6,103 +6,37 @@ import 'package:http/http.dart' as http;
 class ProfileService {
   final String _apiBaseUrl;
   final AuthStorageService _authStorageService;
-  final List<String> _profilePaths;
 
   ProfileService({
     String apiBaseUrl = 'http://10.0.2.2:8000/api',
     AuthStorageService? authStorageService,
     List<String>? profilePaths,
   }) : _apiBaseUrl = apiBaseUrl,
-       _authStorageService = authStorageService ?? AuthStorageService(),
-       _profilePaths =
-           profilePaths ?? const ['/perfil', '/profile', '/me', '/user'];
+       _authStorageService = authStorageService ?? AuthStorageService();
 
 
 
   Future<Map<String, dynamic>> getMyProfile() async {
-    final token = await _authStorageService.getToken();
-    if (token == null || token.isEmpty) {
-      throw Exception('No hay sesión activa. Inicia sesión nuevamente.');
-    }
+    try {
+      final token = await _authStorageService.getToken();
 
-    final savedUser = await _authStorageService.getUser();
-    if (savedUser != null) {
-      return savedUser;
-    }
-
-    for (final path in _profilePaths) {
-      final uri = Uri.parse('$_apiBaseUrl$path');
       final response = await http.get(
-        uri,
+        Uri.parse('$_apiBaseUrl/user'), // Llama a la ruta que preparamos en routes/api.php
         headers: {
-          'Authorization': 'Bearer $token',
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
         },
       );
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return _parseProfileResponse(response.body);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Error al cargar el perfil');
       }
-
-      if (response.statusCode == 401) {
-        throw Exception('Token inválido o expirado. Inicia sesión otra vez.');
-      }
-
-      if (response.statusCode != 404) {
-        throw Exception('Error al cargar perfil (${response.statusCode}).');
-      }
+    } catch (e) {
+      throw Exception(e.toString());
     }
-
-    throw Exception(
-      'No se encontró endpoint de perfil válido. Revisa profilePaths en ProfileService.',
-    );
   }
-
-
-
-  Map<String, dynamic> _parseProfileResponse(String body) {
-    final decoded = jsonDecode(body);
-
-    if (decoded is Map<String, dynamic>) {
-      final user = _extractUserMap(decoded);
-      if (user != null) {
-        return user;
-      }
-    }
-
-    throw Exception('Formato de respuesta inválido para perfil.');
-  }
-
-  Map<String, dynamic>? _extractUserMap(Map<String, dynamic> data) {
-    if (_looksLikeUserMap(data)) {
-      return data;
-    }
-
-    final nestedCandidates = [
-      data['data'],
-      data['user'],
-      data['profile'],
-      data['usuario'],
-    ];
-
-    for (final candidate in nestedCandidates) {
-      if (candidate is Map<String, dynamic> && _looksLikeUserMap(candidate)) {
-        return candidate;
-      }
-    }
-
-    return null;
-  }
-
-  bool _looksLikeUserMap(Map<String, dynamic> map) {
-    final hasName = map.containsKey('name') || map.containsKey('nombre');
-    final hasEmail = map.containsKey('email') || map.containsKey('correo');
-    return hasName || hasEmail;
-  }
-
-
-
 
   Future<void> changePassword({
     required String currentPassword,

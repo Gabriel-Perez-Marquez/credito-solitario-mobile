@@ -9,13 +9,10 @@ class PersonalDataPageView extends StatefulWidget {
 }
 
 class _PersonalDataPageViewState extends State<PersonalDataPageView> {
-  // Estado para controlar si estamos en modo edición o no
   bool _isEditing = false;
   bool _isLoading = false;
   final ProfileService _profileService = ProfileService();
 
-
-  // Controladores para los campos
   late TextEditingController _nameCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
@@ -24,12 +21,53 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
   @override
   void initState() {
     super.initState();
-    // TODO: Aquí deberías inicializar los controladores con los datos reales de tu usuario
-    // provenientes de tu API o de tu estado global (Bloc)
-    _nameCtrl = TextEditingController(text: 'Gabriel Pérez');
-    _emailCtrl = TextEditingController(text: 'pepito@email.com');
-    _phoneCtrl = TextEditingController(text: '+34 600 000 000');
-    _addressCtrl = TextEditingController(text: 'Calle Falsa 123, Madrid');
+    // 1. Inicializamos los controladores vacíos
+    _nameCtrl = TextEditingController();
+    _emailCtrl = TextEditingController();
+    _phoneCtrl = TextEditingController();
+    _addressCtrl = TextEditingController();
+    
+    // 2. Llamamos a la API para traer los datos reales
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final userData = await _profileService.getMyProfile();
+      if (!mounted) return;      
+      setState(() {
+        _nameCtrl.text = userData['name'] ?? '';
+        _emailCtrl.text = userData['email'] ?? '';
+        
+        final cliente = userData['cliente'] ?? {};
+        _phoneCtrl.text = cliente['telefono'] ?? '';
+        
+        final direccion = cliente['direccion'] ?? {};
+        final calle = direccion['calle'] ?? '';
+        final numCasa = direccion['numCasa'] ?? '';
+        final municipio = direccion['municipio'] ?? '';
+
+        List<String> partesDireccion = [];
+        
+        if (calle.isNotEmpty && calle != 'Sin especificar') {
+          partesDireccion.add(calle);
+        }
+        if (numCasa.isNotEmpty && numCasa != '0') {
+          partesDireccion.add(numCasa);
+        }
+        if (municipio.isNotEmpty && municipio != 'Sin especificar') {
+          partesDireccion.add(municipio);
+        }
+        
+        _addressCtrl.text = partesDireccion.join(', ');
+        
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar tu perfil: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
