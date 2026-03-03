@@ -1,5 +1,8 @@
+import 'package:credito_solitario_mobile/core/services/orders_service.dart';
 import 'package:credito_solitario_mobile/core/services/products_service.dart';
 import 'package:credito_solitario_mobile/core/services/shopping_cart_service.dart';
+import 'package:credito_solitario_mobile/features/orders_page/bloc/orders_page_bloc.dart';
+import 'package:credito_solitario_mobile/features/orders_page/ui/orders_page_view.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_page_view.dart';
 import 'package:credito_solitario_mobile/features/products_page/bloc/products_page_view_bloc.dart';
 import 'package:credito_solitario_mobile/features/products_page/ui/product_card.dart';
@@ -40,13 +43,24 @@ class _ProductsPageViewState extends State<ProductsPageView> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (_) => ShoppingCartBloc(ShoppingCartService()),
+          builder: (context) => BlocProvider(
+            create: (context) => ShoppingCartBloc(ShoppingCartService()),
             child: const ShoppingCartView(),
           ),
         ),
       );
       return;
+    }
+
+    if(index == 2){
+      Navigator.pushReplacement(
+        context, MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => OrdersPageBloc(OrdersService()),
+            child: const OrdersPageView(),
+          )
+        )
+      );
     }
     
     if (index == 3) {
@@ -337,9 +351,9 @@ class _ProductsPageViewState extends State<ProductsPageView> {
               label: 'Inicio',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag_outlined), // Cambiado a bag
+              icon: Icon(Icons.shopping_bag_outlined), 
               activeIcon: Icon(Icons.shopping_bag),
-              label: 'Cesta', // Texto ajustado al de la imagen
+              label: 'Cesta', 
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
