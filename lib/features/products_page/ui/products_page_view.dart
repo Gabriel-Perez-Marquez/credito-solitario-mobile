@@ -23,8 +23,8 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
   int _selectedCategoryId = 0;
-  String _sortOption = 'Defecto'; // Puede ser: 'Defecto', 'Precio Asc', 'Precio Desc', 'Nombre A-Z'
-  RangeValues _priceRange = const RangeValues(0, 50000); // Rango de precio (ej. 0 a 50.000 pts)
+  String _sortOption = 'Defecto'; 
+  RangeValues _priceRange = const RangeValues(0, 50000);
 
   @override
   void initState() {
