@@ -23,12 +23,18 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
   int _selectedCategoryId = 0;
+  String _sortOption = 'Defecto'; // Puede ser: 'Defecto', 'Precio Asc', 'Precio Desc', 'Nombre A-Z'
+  RangeValues _priceRange = const RangeValues(0, 50000); // Rango de precio (ej. 0 a 50.000 pts)
 
   @override
   void initState() {
     super.initState();
     productsPageViewBloc = ProductsPageViewBloc(ProductsService())
       ..add(ProductsPageViewFetchAllEvent());
+
+    _searchController.addListener(() {
+      setState(() {}); 
+    });  
   }
 
   @override
@@ -70,6 +76,130 @@ class _ProductsPageViewState extends State<ProductsPageView> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  
+  ListTile _buildSortTile(String value, String title) {
+    return ListTile(
+      title: Text(title, style: TextStyle(fontWeight: _sortOption == value ? FontWeight.bold : FontWeight.normal)),
+      trailing: _sortOption == value ? const Icon(Icons.check, color: Color(0xFF00BFA5)) : null,
+      onTap: () {
+        setState(() => _sortOption = value);
+        Navigator.pop(context); 
+      },
+    );
+  }
+
+  void _showFilterModal() {
+    RangeValues tempRange = _priceRange;
+    String tempSortOption = _sortOption;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).padding.bottom + 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Filtros y Orden', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF132F53))),
+                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                    ],
+                  ),
+                  const Divider(height: 32),
+                  
+                  // --- SECCIÓN: ORDENAR ---
+                  const Text('Ordenar por', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF132F53))),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildSortChip('Defecto', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                      _buildSortChip('Precio Asc', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                      _buildSortChip('Precio Desc', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                      _buildSortChip('Nombre A-Z', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 32),
+
+                  // --- SECCIÓN: PRECIO ---
+                  const Text('Rango de Precio (pts)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF132F53))),
+                  const SizedBox(height: 16),
+                  RangeSlider(
+                    values: tempRange,
+                    min: 0,
+                    max: 50000, 
+                    divisions: 50,
+                    activeColor: const Color(0xFF00BFA5),
+                    inactiveColor: Colors.grey[300],
+                    labels: RangeLabels('${tempRange.start.toInt()} pts', '${tempRange.end.toInt()} pts'),
+                    onChanged: (values) {
+                      setModalState(() => tempRange = values);
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${tempRange.start.toInt()} pts', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                      Text('${tempRange.end.toInt()} pts', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 32),
+
+                  // --- BOTÓN APLICAR ---
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _priceRange = tempRange;
+                          _sortOption = tempSortOption;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF132F53),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('Aplicar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSortChip(String label, String currentSelection, Function(String) onSelect) {
+    final isSelected = label == currentSelection;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: const Color(0xFF00BFA5).withOpacity(0.2),
+      labelStyle: TextStyle(
+        color: isSelected ? const Color(0xFF00BFA5) : Colors.black87,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      side: BorderSide(color: isSelected ? const Color(0xFF00BFA5) : Colors.grey[300]!),
+      onSelected: (_) => onSelect(label),
+    );
   }
 
   Widget _buildCategoryChip(String label, bool isSelected, VoidCallback onTap) {
@@ -195,7 +325,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.tune, color: Colors.white),
-                            onPressed: () {},
+                            onPressed: _showFilterModal, // 👇 AQUÍ 👇
                           ),
                         ),
                       ],
@@ -260,26 +390,6 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     color: Color(0xFF1A1A1A),
                   ),
                 ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Text(
-                    'Ordenar',
-                    style: TextStyle(
-                      color: Color(0xFF004B93),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  label: const Icon(
-                    Icons.sort, 
-                    color: Color(0xFF004B93), 
-                    size: 18,
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
               ],
             ),
           ),
@@ -294,77 +404,139 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                   );
                 } else if (state is ProductsPageViewSuccess) {
-                  final filteredProducts = _selectedCategoryId == 0 
-                      ? state.productsList 
-                      : state.productsList.where((p) => p.categoriaId == _selectedCategoryId).toList();
+                  final searchText = _searchController.text.toLowerCase();
+                  
+                  final filteredProducts = state.productsList.where((p) {
+                    final matchesCategory = _selectedCategoryId == 0 || p.categoriaId == _selectedCategoryId;
+                    final matchesSearch = searchText.isEmpty || 
+                                          p.nombre.toLowerCase().contains(searchText) ||
+                                          (p.descripcion?.toLowerCase().contains(searchText) ?? false);
+                    return matchesCategory && matchesSearch;
+                  }).toList();
+
+                  if (_sortOption == 'Precio Asc') {
+                    filteredProducts.sort((a, b) => a.precio.compareTo(b.precio));
+                  } else if (_sortOption == 'Precio Desc') {
+                    filteredProducts.sort((a, b) => b.precio.compareTo(a.precio));
+                  } else if (_sortOption == 'Nombre A-Z') {
+                    filteredProducts.sort((a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()));
+                  }
 
                   if (filteredProducts.isEmpty) {
-                    return const Center(
-                      child: Text('No hay productos en esta categoría', style: TextStyle(fontSize: 16)),
-                    );
-                  }
-                  return GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.58, 
-                    ),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      return ProductCard(
-                        imageUrl: filteredProducts[index].urlImagen,
-                        productName: filteredProducts[index].nombre,
-                        price: filteredProducts[index].precio,
-                        category: filteredProducts[index].categoria.toString(), 
-                        onAddToCart: () {
-                          final cartItem = CartItem(
-                            productId: filteredProducts[index].id,
-                            nombre: filteredProducts[index].nombre,
-                            precio: filteredProducts[index].precio,
-                            cantidad: 1, 
-                            imageUrl: filteredProducts[index].urlImagen,
-                          );
-
-                          context.read<ShoppingCartBloc>().add(AddItemEvent(cartItem));
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${filteredProducts[index].nombre} añadido a la cesta'),
-                              backgroundColor: const Color(0xFF00BFA5),
-                              duration: const Duration(seconds: 1),
-                              behavior: SnackBarBehavior.floating, 
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
-                } else if (state is ProductsPageViewError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Error al cargar productos',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 40),
-                          child: Text(
-                            state.message,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    return RefreshIndicator(
+                      color: const Color(0xFF00BFA5),
+                      onRefresh: () async {
+                        productsPageViewBloc.add(ProductsPageViewFetchAllEvent());
+                        await Future.delayed(const Duration(seconds: 1));
+                      },
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.search_off, size: 60, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No se encontraron productos',
+                                style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
+                    );
+                  }
+
+                  // GRID DE PRODUCTOS
+                  return RefreshIndicator(
+                    color: const Color(0xFF00BFA5),
+                    onRefresh: () async {
+                      productsPageViewBloc.add(ProductsPageViewFetchAllEvent());
+                      await Future.delayed(const Duration(seconds: 1));
+                    },
+                    child: GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.58, 
+                      ),
+                      itemCount: filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        
+                        return ProductCard(
+                          imageUrl: product.urlImagen,
+                          productName: product.nombre,
+                          price: product.precio,
+                          category: product.categoria?.nombre ?? '', 
+                          onAddToCart: () {
+                            final cartItem = CartItem(
+                              productId: product.id,
+                              nombre: product.nombre,
+                              precio: product.precio,
+                              cantidad: 1,
+                              imageUrl: product.urlImagen,
+                            );
+
+                            context.read<ShoppingCartBloc>().add(AddItemEvent(cartItem));
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${product.nombre} añadido a la cesta'),
+                                backgroundColor: const Color(0xFF00BFA5),
+                                duration: const Duration(seconds: 1),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  );
+
+                } else if (state is ProductsPageViewError) {
+                  return RefreshIndicator(
+                    color: const Color(0xFF00BFA5),
+                    onRefresh: () async {
+                      productsPageViewBloc.add(ProductsPageViewFetchAllEvent());
+                      await Future.delayed(const Duration(seconds: 1));
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Error al cargar productos',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 40),
+                              child: Text(
+                                state.message,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 }
+                
                 return const Center(
                   child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                 );

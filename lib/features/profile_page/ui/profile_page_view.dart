@@ -318,7 +318,7 @@ class _ProfilePageViewState extends State<ProfilePageView> {
       final saldo = user['cliente']['saldo'];
       
       if (saldo is int) return saldo;
-      if (saldo is String) return int.tryParse(saldo) ?? 0;
+      if (saldo is String) return double.tryParse(saldo)?.toInt() ?? 0;
       if (saldo is double) return saldo.toInt();
     }
     return 0;

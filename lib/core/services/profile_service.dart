@@ -21,7 +21,7 @@ class ProfileService {
       final token = await _authStorageService.getToken();
 
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/user'), // Llama a la ruta que preparamos en routes/api.php
+        Uri.parse('$_apiBaseUrl/user'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
