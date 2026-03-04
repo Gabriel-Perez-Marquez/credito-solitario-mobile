@@ -79,16 +79,6 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   }
 
   
-  ListTile _buildSortTile(String value, String title) {
-    return ListTile(
-      title: Text(title, style: TextStyle(fontWeight: _sortOption == value ? FontWeight.bold : FontWeight.normal)),
-      trailing: _sortOption == value ? const Icon(Icons.check, color: Color(0xFF00BFA5)) : null,
-      onTap: () {
-        setState(() => _sortOption = value);
-        Navigator.pop(context); 
-      },
-    );
-  }
 
   void _showFilterModal() {
     RangeValues tempRange = _priceRange;
