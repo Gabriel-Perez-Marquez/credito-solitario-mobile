@@ -38,4 +38,21 @@ class ProductsService implements ProductsListInterface {
       throw Exception('Error al obtener la información: $e');
     }
   }
+
+  Future<List<Categoria>> getCategorias() async {
+    final token = await _authStorageService.getToken();
+    final url = '$_apiBaseUrl/categorias'; // Asegúrate de tener esta ruta en Laravel
+    
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => Categoria.fromJson(json)).toList();
+    } else {
+      throw Exception('Error al cargar las categorías');
+    }
+  }
 }

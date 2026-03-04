@@ -1,6 +1,6 @@
+import 'package:credito_solitario_mobile/core/models/cart_item_response.dart';
 import 'package:credito_solitario_mobile/core/services/orders_service.dart';
 import 'package:credito_solitario_mobile/core/services/products_service.dart';
-import 'package:credito_solitario_mobile/core/services/shopping_cart_service.dart';
 import 'package:credito_solitario_mobile/features/orders_page/bloc/orders_page_bloc.dart';
 import 'package:credito_solitario_mobile/features/orders_page/ui/orders_page_view.dart';
 import 'package:credito_solitario_mobile/features/profile_page/ui/profile_page_view.dart';
@@ -22,12 +22,19 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   late ProductsPageViewBloc productsPageViewBloc;
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
+  int _selectedCategoryId = 0;
+  String _sortOption = 'Defecto'; 
+  RangeValues _priceRange = const RangeValues(0, 50000);
 
   @override
   void initState() {
     super.initState();
     productsPageViewBloc = ProductsPageViewBloc(ProductsService())
       ..add(ProductsPageViewFetchAllEvent());
+
+    _searchController.addListener(() {
+      setState(() {}); 
+    });  
   }
 
   @override
@@ -39,15 +46,10 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
     
-    if (index == 1) {
+   if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => BlocProvider(
-            create: (context) => ShoppingCartBloc(ShoppingCartService()),
-            child: const ShoppingCartView(),
-          ),
-        ),
+        MaterialPageRoute(builder: (context) => const ShoppingCartView()),
       );
       return;
     }
@@ -76,12 +78,125 @@ class _ProductsPageViewState extends State<ProductsPageView> {
     });
   }
 
-  Widget _buildCategoryChip(String label, bool isSelected,) {
+  
+
+  void _showFilterModal() {
+    RangeValues tempRange = _priceRange;
+    String tempSortOption = _sortOption;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).padding.bottom + 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Filtros y Orden', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF132F53))),
+                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                    ],
+                  ),
+                  const Divider(height: 32),
+                  
+                  // --- SECCIÓN: ORDENAR ---
+                  const Text('Ordenar por', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF132F53))),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildSortChip('Defecto', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                      _buildSortChip('Precio Asc', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                      _buildSortChip('Precio Desc', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                      _buildSortChip('Nombre A-Z', tempSortOption, (val) => setModalState(() => tempSortOption = val)),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 32),
+
+                  // --- SECCIÓN: PRECIO ---
+                  const Text('Rango de Precio (pts)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF132F53))),
+                  const SizedBox(height: 16),
+                  RangeSlider(
+                    values: tempRange,
+                    min: 0,
+                    max: 50000, 
+                    divisions: 50,
+                    activeColor: const Color(0xFF00BFA5),
+                    inactiveColor: Colors.grey[300],
+                    labels: RangeLabels('${tempRange.start.toInt()} pts', '${tempRange.end.toInt()} pts'),
+                    onChanged: (values) {
+                      setModalState(() => tempRange = values);
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${tempRange.start.toInt()} pts', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                      Text('${tempRange.end.toInt()} pts', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 32),
+
+                  // --- BOTÓN APLICAR ---
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _priceRange = tempRange;
+                          _sortOption = tempSortOption;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF132F53),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('Aplicar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSortChip(String label, String currentSelection, Function(String) onSelect) {
+    final isSelected = label == currentSelection;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: const Color(0xFF00BFA5).withOpacity(0.2),
+      labelStyle: TextStyle(
+        color: isSelected ? const Color(0xFF00BFA5) : Colors.black87,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      side: BorderSide(color: isSelected ? const Color(0xFF00BFA5) : Colors.grey[300]!),
+      onSelected: (_) => onSelect(label),
+    );
+  }
+
+  Widget _buildCategoryChip(String label, bool isSelected, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: TextButton(
-        onPressed: () {
-        },
+        onPressed: onTap,
         style: TextButton.styleFrom(
           backgroundColor: isSelected ? Colors.white : Colors.white.withOpacity(0.15),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -200,7 +315,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.tune, color: Colors.white),
-                            onPressed: () {},
+                            onPressed: _showFilterModal, // 👇 AQUÍ 👇
                           ),
                         ),
                       ],
@@ -208,16 +323,42 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     const SizedBox(height: 24),
 
                     // Categorías (Carrusel horizontal)
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildCategoryChip('Todo', true),
-                          _buildCategoryChip('Alimentación', false),
-                          _buildCategoryChip('Higiene', false),
-                          _buildCategoryChip('Ropa', false),
-                        ],
-                      ),
+                    BlocBuilder<ProductsPageViewBloc, ProductsPageViewState>(
+                      bloc: productsPageViewBloc,
+                      builder: (context, state) {
+                        if (state is ProductsPageViewSuccess) {
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                // Botón estático de "Todo"
+                                _buildCategoryChip('Todo', _selectedCategoryId == 0, () {
+                                  setState(() => _selectedCategoryId = 0);
+                                }),
+                                // Lista dinámica desde la API
+                                ...state.categoriesList.map((categoria) {
+                                  return _buildCategoryChip(
+                                    categoria.nombre,
+                                    _selectedCategoryId == categoria.id,
+                                    () {
+                                      setState(() => _selectedCategoryId = categoria.id);
+                                    },
+                                  );
+                                }),
+                              ],
+                            ),
+                          );
+                        }
+                        
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildCategoryChip('Todo', true, () {}),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -239,26 +380,6 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     color: Color(0xFF1A1A1A),
                   ),
                 ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Text(
-                    'Ordenar',
-                    style: TextStyle(
-                      color: Color(0xFF004B93),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  label: const Icon(
-                    Icons.sort, 
-                    color: Color(0xFF004B93), 
-                    size: 18,
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
               ],
             ),
           ),
@@ -273,48 +394,139 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                   );
                 } else if (state is ProductsPageViewSuccess) {
-                  return GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.58, 
-                    ),
-                    itemCount: state.productsList.length,
-                    itemBuilder: (context, index) {
-                      return ProductCard(
-                        imageUrl: state.productsList[index].urlImagen,
-                        productName: state.productsList[index].nombre,
-                        price: state.productsList[index].precio,
-                        category: state.productsList[index].categoria.toString(), 
-                      );
-                    },
-                  );
-                } else if (state is ProductsPageViewError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Error al cargar productos',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 40),
-                          child: Text(
-                            state.message,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  final searchText = _searchController.text.toLowerCase();
+                  
+                  final filteredProducts = state.productsList.where((p) {
+                    final matchesCategory = _selectedCategoryId == 0 || p.categoriaId == _selectedCategoryId;
+                    final matchesSearch = searchText.isEmpty || 
+                                          p.nombre.toLowerCase().contains(searchText) ||
+                                          (p.descripcion?.toLowerCase().contains(searchText) ?? false);
+                    return matchesCategory && matchesSearch;
+                  }).toList();
+
+                  if (_sortOption == 'Precio Asc') {
+                    filteredProducts.sort((a, b) => a.precio.compareTo(b.precio));
+                  } else if (_sortOption == 'Precio Desc') {
+                    filteredProducts.sort((a, b) => b.precio.compareTo(a.precio));
+                  } else if (_sortOption == 'Nombre A-Z') {
+                    filteredProducts.sort((a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()));
+                  }
+
+                  if (filteredProducts.isEmpty) {
+                    return RefreshIndicator(
+                      color: const Color(0xFF00BFA5),
+                      onRefresh: () async {
+                        productsPageViewBloc.add(ProductsPageViewFetchAllEvent());
+                        await Future.delayed(const Duration(seconds: 1));
+                      },
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.search_off, size: 60, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No se encontraron productos',
+                                style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
+                    );
+                  }
+
+                  // GRID DE PRODUCTOS
+                  return RefreshIndicator(
+                    color: const Color(0xFF00BFA5),
+                    onRefresh: () async {
+                      productsPageViewBloc.add(ProductsPageViewFetchAllEvent());
+                      await Future.delayed(const Duration(seconds: 1));
+                    },
+                    child: GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.58, 
+                      ),
+                      itemCount: filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        
+                        return ProductCard(
+                          imageUrl: product.urlImagen,
+                          productName: product.nombre,
+                          price: product.precio,
+                          category: product.categoria?.nombre ?? '', 
+                          onAddToCart: () {
+                            final cartItem = CartItem(
+                              productId: product.id,
+                              nombre: product.nombre,
+                              precio: product.precio,
+                              cantidad: 1,
+                              imageUrl: product.urlImagen,
+                            );
+
+                            context.read<ShoppingCartBloc>().add(AddItemEvent(cartItem));
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${product.nombre} añadido a la cesta'),
+                                backgroundColor: const Color(0xFF00BFA5),
+                                duration: const Duration(seconds: 1),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  );
+
+                } else if (state is ProductsPageViewError) {
+                  return RefreshIndicator(
+                    color: const Color(0xFF00BFA5),
+                    onRefresh: () async {
+                      productsPageViewBloc.add(ProductsPageViewFetchAllEvent());
+                      await Future.delayed(const Duration(seconds: 1));
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Error al cargar productos',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 40),
+                              child: Text(
+                                state.message,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 }
+                
                 return const Center(
                   child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
                 );
@@ -344,23 +556,49 @@ class _ProductsPageViewState extends State<ProductsPageView> {
           unselectedItemColor: Colors.grey[400],
           selectedFontSize: 12,
           unselectedFontSize: 12,
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Inicio',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag_outlined), 
-              activeIcon: Icon(Icons.shopping_bag),
-              label: 'Cesta', 
+              icon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = state.items.length;
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child: const Icon(Icons.shopping_bag_outlined),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag_outlined);
+                },
+              ),
+              activeIcon: BlocBuilder<ShoppingCartBloc, ShoppingCartState>(
+                builder: (context, state) {
+                  int cantidadEnCarrito = state.items.length;
+
+                  if (cantidadEnCarrito > 0) {
+                    return Badge(
+                      label: Text('$cantidadEnCarrito'),
+                      backgroundColor: Colors.red,
+                      child: const Icon(Icons.shopping_bag),
+                    );
+                  }
+                  return const Icon(Icons.shopping_bag);
+                },
+              ),
+              label: 'Cesta',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long),
               label: 'Pedidos',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Perfil',

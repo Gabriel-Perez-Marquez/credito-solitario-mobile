@@ -5,13 +5,15 @@ class ProductCard extends StatelessWidget {
   final String productName;
   final double price;
   final String category;
+  final VoidCallback onAddToCart;
 
   const ProductCard({
     super.key,
     required this.imageUrl,
     required this.productName,
     required this.price,
-    required this.category
+    required this.category,
+    required this.onAddToCart
   });
 
   @override
@@ -97,11 +99,9 @@ class ProductCard extends StatelessWidget {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () {
-                          // Acción al agregar al carrito
-                        },
-                        customBorder: CircleBorder(),
-                        child: Icon(
+                        onTap: onAddToCart, 
+                        customBorder: const CircleBorder(),
+                        child: const Icon(
                           Icons.add,
                           color: Colors.white,
                           size: 24,
@@ -133,7 +133,7 @@ class ProductCard extends StatelessWidget {
                 ),
                 SizedBox(height: 6),
                 Text(
-                  '€${price.toStringAsFixed(2)}',
+                  '${price.toStringAsFixed(2)} pts',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

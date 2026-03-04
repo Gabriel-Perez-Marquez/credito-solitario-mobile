@@ -47,7 +47,7 @@ class _ShoppingCartState extends State<ShoppingCartView> {
           if(cliente['saldo'] != null){
             final saldo = cliente['saldo'];
             if (saldo is int) _saldoDisponible = saldo;
-            if (saldo is String) _saldoDisponible = int.tryParse(saldo) ?? 0;
+            if (saldo is String) _saldoDisponible = double.tryParse(saldo)?.toInt() ?? 0;
             if (saldo is double) _saldoDisponible = saldo.toInt();
           }
 
