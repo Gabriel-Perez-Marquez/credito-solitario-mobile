@@ -11,6 +11,11 @@ Crédito Solidario es una plataforma móvil de impacto social diseñada para fac
 * **Modelado de Datos:** [Equatable](https://pub.dev/packages/equatable) para comparación de objetos y estados
 * **Formateo:** [intl](https://pub.dev/packages/intl) para manejo de fechas y monedas
 
+## Credenciales
+* username: maria@ejemplo.com
+* password: 12345678
+
+
 ## 🏗️ Arquitectura del Proyecto
 
 El proyecto sigue una estructura de **Clean Architecture** orientada por características (*features*), lo que facilita la escalabilidad y el mantenimiento:
