@@ -16,6 +16,9 @@ class LoginService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        if (data['user']['cliente'] == null) {
+          throw Exception('Los administradores deben usar el panel web.');
+        }
         final token = _extractToken(data);
         final user = _extractUser(data);
 
