@@ -1,4 +1,6 @@
 import 'package:credito_solitario_mobile/core/models/cart_item_response.dart';
+import 'package:credito_solitario_mobile/core/models/notificacion_response.dart';
+import 'package:credito_solitario_mobile/core/services/notification_service.dart';
 import 'package:credito_solitario_mobile/core/services/orders_service.dart';
 import 'package:credito_solitario_mobile/core/services/products_service.dart';
 import 'package:credito_solitario_mobile/features/orders_page/bloc/orders_page_bloc.dart';
@@ -25,6 +27,11 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   int _selectedCategoryId = 0;
   String _sortOption = 'Defecto'; 
   RangeValues _priceRange = const RangeValues(0, 50000);
+  final NotificationsService _notificationsService = NotificationsService();
+  List<NotificationModel> _notificaciones = [];
+  bool _isLoadingNotifications = true;
+
+  
 
   @override
   void initState() {
@@ -35,6 +42,18 @@ class _ProductsPageViewState extends State<ProductsPageView> {
     _searchController.addListener(() {
       setState(() {}); 
     });  
+
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    final notis = await _notificationsService.getMyNotifications();
+    if (mounted) {
+      setState(() {
+        _notificaciones = notis;
+        _isLoadingNotifications = false;
+      });
+    }
   }
 
   @override
@@ -177,6 +196,154 @@ class _ProductsPageViewState extends State<ProductsPageView> {
     );
   }
 
+  void _showNotificationsPanel() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final unreadCount = _notificaciones.where((n) => n.isNew).length;
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Notificaciones', 
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF132F53))
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
+                        child: Text(unreadCount.toString(), style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                ],
+              ),
+              const Divider(height: 32),
+              
+             if (_isLoadingNotifications)
+                const Center(child: CircularProgressIndicator(color: Color(0xFF00BFA5)))
+              else if (_notificaciones.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: Center(
+                    child: Text('No tienes notificaciones', style: TextStyle(color: Colors.grey)),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _notificaciones.length,
+                    itemBuilder: (context, index) {
+                      final noti = _notificaciones[index];
+                      return _buildNotificationItem(
+                        icon: Icons.notifications_active_outlined, 
+                        title: noti.titulo,
+                        message: noti.mensaje,
+                        time: noti.fecha,
+                        isNew: noti.isNew,
+                      );
+                    },
+                  ),
+                ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    ).whenComplete(() {
+      _notificationsService.markAllAsRead();
+
+      setState(() {
+        _notificaciones = _notificaciones.map((n) {
+          return NotificationModel(
+            id: n.id,
+            titulo: n.titulo,
+            mensaje: n.mensaje,
+            fecha: n.fecha,
+            isNew: false,
+          );
+        }).toList();
+      });
+    });
+  }
+
+  Widget _buildNotificationItem({
+    required IconData icon, 
+    required String title, 
+    required String message, 
+    required String time, 
+    required bool isNew
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isNew ? const Color(0xFF00BFA5).withOpacity(0.08) : Colors.grey[50],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isNew ? const Color(0xFF00BFA5).withOpacity(0.3) : Colors.grey[200]!),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icono circular
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isNew ? const Color(0xFF00BFA5) : Colors.grey[300],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: isNew ? Colors.white : Colors.grey[600], size: 20),
+          ),
+          const SizedBox(width: 16),
+          // Textos
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title, 
+                      style: TextStyle(
+                        fontWeight: isNew ? FontWeight.w900 : FontWeight.bold, 
+                        fontSize: 15, 
+                        color: const Color(0xFF132F53)
+                      )
+                    ),
+                    Text(
+                      time, 
+                      style: TextStyle(
+                        fontSize: 12, 
+                        color: isNew ? const Color(0xFF00BFA5) : Colors.grey[500], 
+                        fontWeight: isNew ? FontWeight.bold : FontWeight.normal
+                      )
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(message, style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.3)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSortChip(String label, String currentSelection, Function(String) onSelect) {
     final isSelected = label == currentSelection;
     return ChoiceChip(
@@ -221,13 +388,13 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7), // Gris claro del fondo
+      backgroundColor: const Color(0xFFF5F5F7), 
       body: Column(
         children: [
           // Header principal
           Container(
             decoration: const BoxDecoration(
-              color: Color(0xFF004B93), // Azul oscuro fiel a la imagen
+              color: Color(0xFF004B93), 
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
@@ -271,9 +438,35 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                             color: Colors.white.withOpacity(0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: IconButton(
-                            icon: const Icon(Icons.notifications_none, color: Colors.white),
-                            onPressed: () {},
+                          child: Builder(
+                            builder: (context) {
+                              final unreadCount = _notificaciones.where((n) => n.isNew).length;
+                              
+                              return Stack(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.notifications_none, color: Colors.white),
+                                    onPressed: _showNotificationsPanel,
+                                  ),
+                                  if (unreadCount > 0)
+                                    Positioned(
+                                      right: 8,
+                                      top: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          '$unreadCount',
+                                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            }
                           ),
                         ),
                       ],
@@ -315,7 +508,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.tune, color: Colors.white),
-                            onPressed: _showFilterModal, // 👇 AQUÍ 👇
+                            onPressed: _showFilterModal, 
                           ),
                         ),
                       ],
