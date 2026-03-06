@@ -124,9 +124,28 @@ class _ShoppingCartState extends State<ShoppingCartView> {
                 SnackBar(content: Text(state.message), backgroundColor: Colors.red),
               );
             } else if (state is ShoppingCartSuccess) {
+              // 1. Mostramos el mensaje de éxito
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: const Color(0xFF00BFA5)),
+                SnackBar(
+                  content: Text(state.message), 
+                  backgroundColor: const Color(0xFF00BFA5),
+                  duration: const Duration(seconds: 2), 
+                ),
               );
+              
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => BlocProvider(
+                        create: (context) => OrdersPageBloc(OrdersService()),
+                        child: const OrdersPageView(),
+                      )
+                    )
+                  );
+                }
+              });
             }
           },
           builder: (context, state) {
