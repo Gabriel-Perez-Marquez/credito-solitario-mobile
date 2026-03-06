@@ -72,7 +72,9 @@ class ProfileService {
     required String name,
     required String email,
     required String phone,
-    required String address,
+    required String calle,
+    required String numCasa,
+    required String municipio,
   }) async {
     try {
       final token = await _authStorageService.getToken();
@@ -88,7 +90,9 @@ class ProfileService {
           'name': name,
           'email': email,
           'telefono': phone,
-          'direccion': address,
+          'calle': calle,
+          'numCasa': numCasa,
+          'municipio': municipio,
         }),
       );
 

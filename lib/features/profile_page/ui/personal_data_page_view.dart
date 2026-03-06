@@ -17,17 +17,21 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
   late TextEditingController _addressCtrl;
+  late TextEditingController _calleCtrl;
+  late TextEditingController _numCasaCtrl;
+  late TextEditingController _municipioCtrl;
 
   @override
   void initState() {
     super.initState();
-    // 1. Inicializamos los controladores vacíos
     _nameCtrl = TextEditingController();
     _emailCtrl = TextEditingController();
     _phoneCtrl = TextEditingController();
     _addressCtrl = TextEditingController();
+    _calleCtrl = TextEditingController();
+    _numCasaCtrl = TextEditingController();
+    _municipioCtrl = TextEditingController();
     
-    // 2. Llamamos a la API para traer los datos reales
     _loadUserData();
   }
 
@@ -60,6 +64,9 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
         }
         
         _addressCtrl.text = partesDireccion.join(', ');
+        _calleCtrl.text = (calle == 'Sin especificar') ? '' : calle;
+        _numCasaCtrl.text = (numCasa == '0') ? '' : numCasa;
+        _municipioCtrl.text = (municipio == 'Sin especificar') ? '' : municipio;
         
       });
     } catch (e) {
@@ -88,7 +95,9 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
         name: _nameCtrl.text,
         email: _emailCtrl.text,
         phone: _phoneCtrl.text,
-        address: _addressCtrl.text,
+        calle: _calleCtrl.text,           
+        numCasa: _numCasaCtrl.text,       
+        municipio: _municipioCtrl.text,   
       );
       
       
