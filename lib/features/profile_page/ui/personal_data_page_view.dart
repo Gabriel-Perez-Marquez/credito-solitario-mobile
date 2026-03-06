@@ -100,9 +100,7 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
         municipio: _municipioCtrl.text,   
       );
       
-      
-      // Simulamos un retraso de red
-      await Future.delayed(const Duration(seconds: 2));
+      await _loadUserData();
 
       if (!mounted) return;
       
@@ -199,12 +197,41 @@ class _PersonalDataPageViewState extends State<PersonalDataPageView> {
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
-            _buildDataField(
-              label: 'Dirección',
-              controller: _addressCtrl,
-              icon: Icons.location_on_outlined,
-            ),
             
+            if (_isEditing) ...[
+              _buildDataField(
+                label: 'Calle',
+                controller: _calleCtrl,
+                icon: Icons.signpost_outlined,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDataField(
+                      label: 'Número',
+                      controller: _numCasaCtrl,
+                      icon: Icons.home_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: _buildDataField(
+                      label: 'Municipio',
+                      controller: _municipioCtrl,
+                      icon: Icons.location_city_outlined,
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              _buildDataField(
+                label: 'Dirección Completa',
+                controller: _addressCtrl,
+                icon: Icons.location_on_outlined,
+              ),
+            ],
+
             const SizedBox(height: 30),
             
             // Botón principal (Alterna entre Editar y Guardar)
