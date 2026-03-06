@@ -263,7 +263,21 @@ class _ProductsPageViewState extends State<ProductsPageView> {
           ),
         );
       },
-    );
+    ).whenComplete(() {
+      _notificationsService.markAllAsRead();
+
+      setState(() {
+        _notificaciones = _notificaciones.map((n) {
+          return NotificationModel(
+            id: n.id,
+            titulo: n.titulo,
+            mensaje: n.mensaje,
+            fecha: n.fecha,
+            isNew: false,
+          );
+        }).toList();
+      });
+    });
   }
 
   Widget _buildNotificationItem({

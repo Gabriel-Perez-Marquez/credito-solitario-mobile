@@ -30,4 +30,19 @@ class NotificationsService {
       return [];
     }
   }
+
+  Future<void> markAllAsRead() async {
+    try {
+      final token = await _authStorageService.getToken();
+      await http.post(
+        Uri.parse('$_apiBaseUrl/notificaciones/leer'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 }
