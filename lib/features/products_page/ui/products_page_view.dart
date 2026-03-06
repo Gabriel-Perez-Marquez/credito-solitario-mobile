@@ -26,7 +26,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedCategoryId = 0;
   String _sortOption = 'Defecto'; 
-  RangeValues _priceRange = const RangeValues(0, 50000);
+  RangeValues _priceRange = const RangeValues(0, 5000);
   final NotificationsService _notificationsService = NotificationsService();
   List<NotificationModel> _notificaciones = [];
   bool _isLoadingNotifications = true;
@@ -105,7 +105,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, 
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -127,7 +127,6 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                   ),
                   const Divider(height: 32),
                   
-                  // --- SECCIÓN: ORDENAR ---
                   const Text('Ordenar por', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF132F53))),
                   const SizedBox(height: 12),
                   Wrap(
@@ -143,19 +142,18 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                   
                   const SizedBox(height: 32),
 
-                  // --- SECCIÓN: PRECIO ---
                   const Text('Rango de Precio (pts)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF132F53))),
                   const SizedBox(height: 16),
                   RangeSlider(
                     values: tempRange,
                     min: 0,
-                    max: 50000, 
-                    divisions: 50,
+                    max: 5000,
+                    divisions: 100,
                     activeColor: const Color(0xFF00BFA5),
                     inactiveColor: Colors.grey[300],
                     labels: RangeLabels('${tempRange.start.toInt()} pts', '${tempRange.end.toInt()} pts'),
                     onChanged: (values) {
-                      setModalState(() => tempRange = values);
+                      setModalState(() => tempRange = values); 
                     },
                   ),
                   Row(
@@ -168,17 +166,17 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                   
                   const SizedBox(height: 32),
 
-                  // --- BOTÓN APLICAR ---
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
+                        Navigator.pop(context);
+                        
                         setState(() {
                           _priceRange = tempRange;
                           _sortOption = tempSortOption;
                         });
-                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF132F53),
@@ -594,7 +592,8 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     final matchesSearch = searchText.isEmpty || 
                                           p.nombre.toLowerCase().contains(searchText) ||
                                           (p.descripcion?.toLowerCase().contains(searchText) ?? false);
-                    return matchesCategory && matchesSearch;
+                    final matchesPrice = p.precio >= _priceRange.start && p.precio <= _priceRange.end;
+                    return matchesCategory && matchesSearch && matchesPrice;
                   }).toList();
 
                   if (_sortOption == 'Precio Asc') {
@@ -639,6 +638,7 @@ class _ProductsPageViewState extends State<ProductsPageView> {
                     onRefresh: () async {
                       productsPageViewBloc.add(ProductsPageViewFetchAllEvent());
                       await Future.delayed(const Duration(seconds: 1));
+                      await _loadNotifications();
                     },
                     child: GridView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
