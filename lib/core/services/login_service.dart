@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:credito_solitario_mobile/core/services/auth_storage_service.dart';
 
 class LoginService {
-  // Cambia esta URL por la URL de tu API
   static const String baseUrl = 'http://10.0.2.2:8000/api';
   final AuthStorageService _authStorageService = AuthStorageService();
 
@@ -42,10 +41,11 @@ class LoginService {
         };
       }
     } catch (e) {
-      // Error de conexión
       return {'success': false, 'error': 'Error de conexión: ${e.toString()}'};
     }
   }
+
+  
 
   String? _extractToken(dynamic data) {
     if (data is! Map<String, dynamic>) {

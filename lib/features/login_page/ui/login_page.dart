@@ -1,6 +1,7 @@
 import 'package:credito_solitario_mobile/features/login_page/bloc/login_page_bloc.dart';
 import 'package:credito_solitario_mobile/core/services/login_service.dart';
 import 'package:credito_solitario_mobile/features/products_page/ui/products_page_view.dart';
+import 'package:credito_solitario_mobile/features/register_page/ui/register_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -152,6 +153,36 @@ class _LoginPageViewState extends State<LoginPageView> {
                             style: TextStyle(fontSize: 20, color: Colors.white),
                           ),
                   ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      '¿No tienes cuenta?',
+                      style: TextStyle(fontSize: 15, color: Colors.black54),
+                    ),
+                    TextButton(
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const RegisterPageView(),
+                                ),
+                              );
+                            },
+                      child: const Text(
+                        'Regístrate aquí',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 1, 46, 89),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

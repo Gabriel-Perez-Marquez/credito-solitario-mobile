@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:credito_solitario_mobile/core/services/auth_storage_service.dart';
 
 class NotificationsService {
-  // Ajusta esta URL a tu configuración
   final String _apiBaseUrl = 'http://10.0.2.2:8000/api'; 
   final AuthStorageService _authStorageService = AuthStorageService();
 
